@@ -12,6 +12,7 @@ from redis.asyncio import Redis
 
 from api.commands import router as commands_router
 from api.customers import router as customers_router
+from api.dependencies import init_arq_pool
 from api.deliveries import router as deliveries_router
 from api.invoices import router as invoices_router
 from api.orders import router as orders_router
@@ -116,6 +117,7 @@ async def lifespan(app: FastAPI):
     app.state.redis = redis
     app.state.redis_connected = redis_connected
     app.state.redis_ping_ms = redis_ping_ms
+    app.state.arq = await init_arq_pool(settings.REDIS_URL)
 
     try:
         _instrument_app(app)

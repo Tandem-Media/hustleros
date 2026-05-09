@@ -18,7 +18,7 @@ async def _verify_payment_timeout_with_session(
     order_id: str,
     tenant_id: str,
 ) -> dict[str, str]:
-    from api.payments import derive_payment_balance, list_payment_events
+    from services.payment_reporting import derive_payment_balance, list_payment_events
 
     order_uuid = UUID(order_id)
     events = await list_payment_events(session, order_uuid)

@@ -14,6 +14,8 @@ from domain.commands import (
     UpdateOrderStatusCommand,
 )
 
+DEFAULT_PAYMENT_METHOD = "cash"
+
 
 class CommandParser:
     customer_pattern: Pattern[str] = re.compile(
@@ -68,7 +70,7 @@ class CommandParser:
                 correlation_id=correlation_id,
                 order_id=payment_match.group("order_id"),
                 amount=self._to_decimal(payment_match.group("amount")),
-                method=(payment_match.group("method") or "cash").lower(),
+                method=(payment_match.group("method") or DEFAULT_PAYMENT_METHOD).lower(),
             )
 
         order_status_match = self.order_status_pattern.fullmatch(normalized)

@@ -35,19 +35,23 @@ async def get_db() -> AsyncIterator[AsyncSession]:
         yield session
 
 
+async def init_arq_pool(redis_url: str) -> ArqRedis | _ArqStub:
+    """Initialize an arq pool or fall back to a stub."""
+
+    try:
+        return await create_pool(RedisSettings.from_dsn(redis_url))
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("Arq pool initialization failed: %s", exc)
+        return _ArqStub()
+
+
 async def get_arq(request: Request) -> ArqRedis | _ArqStub:
     """Return a cached arq pool for the current app."""
 
     cached_pool = getattr(request.app.state, "arq", None)
     if cached_pool is not None:
         return cached_pool
-
     settings = get_settings()
-    try:
-        pool = await create_pool(RedisSettings.from_dsn(settings.REDIS_URL))
-    except Exception as exc:  # noqa: BLE001
-        logger.warning("Arq pool initialization failed: %s", exc)
-        pool = _ArqStub()
-
+    pool = await init_arq_pool(settings.REDIS_URL)
     request.app.state.arq = pool
     return pool
