@@ -24,6 +24,7 @@ from db.session import reset_session_factory
 from observability.alertengine import get_incident_counts, health_score_contributor
 
 logger = logging.getLogger(__name__)
+DEFAULT_VERSION = "0.2.0"
 
 try:
     from fastapi_alertengine import instrument as _external_instrument
@@ -145,7 +146,7 @@ async def lifespan(app: FastAPI):
                 logger.warning("Arq shutdown failed: %s", exc)
 
 
-app = FastAPI(title="hustleros", version="0.2.0", lifespan=lifespan)
+app = FastAPI(title="hustleros", version=DEFAULT_VERSION, lifespan=lifespan)
 
 app.include_router(commands_router)
 app.include_router(orders_router)
@@ -160,7 +161,7 @@ _instrument_app(app)
 @app.get("/")
 async def root() -> dict[str, str]:
     settings = getattr(app.state, "settings", None)
-    version = settings.APP_VERSION if settings else "0.2.0"
+    version = settings.APP_VERSION if settings else DEFAULT_VERSION
     return {"service": "hustleros", "version": version}
 
 
@@ -168,7 +169,7 @@ async def root() -> dict[str, str]:
 async def status() -> dict[str, Any]:
     settings = getattr(app.state, "settings", None)
     environment = settings.ENVIRONMENT if settings else "development"
-    version = settings.APP_VERSION if settings else "0.2.0"
+    version = settings.APP_VERSION if settings else DEFAULT_VERSION
     uptime_s = max(0.0, time.monotonic() - getattr(app.state, "started_monotonic", time.monotonic()))
 
     pool_size = 10

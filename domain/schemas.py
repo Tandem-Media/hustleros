@@ -35,7 +35,7 @@ class OrderRequest(BaseSchema):
     items: dict[str, Any] = Field(default_factory=dict)
     status: str = "PENDING"
     total: Decimal
-    correlation_id: str
+    correlation_id: str = ""
 
 
 class OrderPatchRequest(BaseSchema):
@@ -86,8 +86,8 @@ class PaymentReportRequest(BaseSchema):
     method: str
     reference: str | None = None
     reported_by: str | None = None
-    correlation_id: str
-    causation_id: str
+    correlation_id: str = ""
+    causation_id: str = ""
 
 
 class PaymentRequest(BaseSchema):

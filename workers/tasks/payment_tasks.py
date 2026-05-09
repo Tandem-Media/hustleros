@@ -7,10 +7,12 @@ from uuid import UUID
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from db.session import get_session
 from domain.events import PaymentTimeoutEvent
 from domain.models import Payment
 from observability.alertengine import emit_incident
 from services.event_publisher import EventPublisher
+from services.payment_reporting import derive_payment_balance, list_payment_events
 
 
 async def _verify_payment_timeout_with_session(
@@ -18,8 +20,6 @@ async def _verify_payment_timeout_with_session(
     order_id: str,
     tenant_id: str,
 ) -> dict[str, str]:
-    from services.payment_reporting import derive_payment_balance, list_payment_events
-
     order_uuid = UUID(order_id)
     events = await list_payment_events(session, order_uuid)
     balance = await derive_payment_balance(session, order_uuid)
@@ -80,8 +80,6 @@ async def verify_payment_timeout(
 ) -> dict[str, str]:
     if ctx and ctx.get("db") is not None:
         return await _verify_payment_timeout_with_session(ctx["db"], order_id, tenant_id)
-
-    from db.session import get_session
 
     async with get_session() as session:
         return await _verify_payment_timeout_with_session(session, order_id, tenant_id)

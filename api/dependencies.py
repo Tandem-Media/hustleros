@@ -22,10 +22,9 @@ class _ArqStub:
 
     async def enqueue_job(self, function: str, *args: Any, **kwargs: Any) -> None:
         self.enqueued.append({"function": function, "args": args, "kwargs": kwargs})
-        return None
 
     async def aclose(self) -> None:
-        return None
+        pass
 
 
 async def get_db() -> AsyncIterator[AsyncSession]:
