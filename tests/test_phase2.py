@@ -27,7 +27,7 @@ class FakeScalarResult:
     def __init__(self, items):
         self._items = items
 
-    def all(self):
+    def all(self) -> list[object]:
         return list(self._items)
 
 
@@ -35,7 +35,7 @@ class FakeExecuteResult:
     def __init__(self, items):
         self._items = items
 
-    def scalars(self):
+    def scalars(self) -> FakeScalarResult:
         return FakeScalarResult(self._items)
 
 
@@ -46,7 +46,7 @@ class FakeSession:
         self.outbox = []
         self.commits = 0
 
-    def add(self, item):
+    def add(self, item: object) -> None:
         if item.__class__.__name__ == "Payment":
             if getattr(item, "id", None) is None:
                 item.id = uuid4()
