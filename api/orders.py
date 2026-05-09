@@ -91,7 +91,7 @@ async def update_order_record(session: AsyncSession, order_id: UUID, payload: Or
     return order
 
 
-@router.post('', response_model=OrderResponse, status_code=status.HTTP_201_CREATED)
+@router.post("", response_model=OrderResponse, status_code=status.HTTP_201_CREATED)
 async def create_order(
     payload: OrderRequest,
     session: Annotated[AsyncSession, Depends(get_db)],
@@ -99,7 +99,7 @@ async def create_order(
     return await create_order_record(session, payload)
 
 
-@router.get('', response_model=list[OrderResponse])
+@router.get("", response_model=list[OrderResponse])
 async def list_orders(
     session: Annotated[AsyncSession, Depends(get_db)],
     tenant_id: Annotated[str | None, Query()] = None,
@@ -107,7 +107,7 @@ async def list_orders(
     return await list_order_records(session, tenant_id=tenant_id)
 
 
-@router.get('/{order_id}', response_model=OrderResponse)
+@router.get("/{order_id}", response_model=OrderResponse)
 async def get_order(
     order_id: UUID,
     session: Annotated[AsyncSession, Depends(get_db)],
@@ -115,7 +115,7 @@ async def get_order(
     return await get_order_record(session, order_id)
 
 
-@router.patch('/{order_id}', response_model=OrderResponse)
+@router.patch("/{order_id}", response_model=OrderResponse)
 async def patch_order(
     order_id: UUID,
     payload: OrderPatchRequest,

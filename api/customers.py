@@ -44,7 +44,7 @@ async def get_customer_record(session: AsyncSession, customer_id: UUID) -> Custo
     return customer
 
 
-@router.post('', response_model=CustomerResponse, status_code=status.HTTP_201_CREATED)
+@router.post("", response_model=CustomerResponse, status_code=status.HTTP_201_CREATED)
 async def create_customer(
     payload: CustomerRequest,
     session: Annotated[AsyncSession, Depends(get_db)],
@@ -52,7 +52,7 @@ async def create_customer(
     return await create_customer_record(session, payload)
 
 
-@router.get('', response_model=list[CustomerResponse])
+@router.get("", response_model=list[CustomerResponse])
 async def list_customers(
     session: Annotated[AsyncSession, Depends(get_db)],
     tenant_id: Annotated[str | None, Query()] = None,
@@ -60,7 +60,7 @@ async def list_customers(
     return await list_customer_records(session, tenant_id=tenant_id)
 
 
-@router.get('/{customer_id}', response_model=CustomerResponse)
+@router.get("/{customer_id}", response_model=CustomerResponse)
 async def get_customer(
     customer_id: UUID,
     session: Annotated[AsyncSession, Depends(get_db)],

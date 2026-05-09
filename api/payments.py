@@ -119,7 +119,7 @@ async def derive_payment_balance(session: AsyncSession, order_id: UUID) -> dict[
     }
 
 
-@router.post('/report', response_model=PaymentResponse, status_code=status.HTTP_202_ACCEPTED)
+@router.post("/report", response_model=PaymentResponse, status_code=status.HTTP_202_ACCEPTED)
 async def report_payment(
     payload: PaymentReportRequest,
     session: Annotated[AsyncSession, Depends(get_db)],
@@ -128,7 +128,7 @@ async def report_payment(
     return await report_payment_event(session, arq, payload)
 
 
-@router.get('/{order_id}', response_model=list[PaymentResponse])
+@router.get("/{order_id}", response_model=list[PaymentResponse])
 async def get_payments(
     order_id: UUID,
     session: Annotated[AsyncSession, Depends(get_db)],
@@ -137,7 +137,7 @@ async def get_payments(
     return await list_payment_events(session, order_id)
 
 
-@router.get('/{order_id}/balance', response_model=PaymentBalanceResponse)
+@router.get("/{order_id}/balance", response_model=PaymentBalanceResponse)
 async def get_payment_balance(
     order_id: UUID,
     session: Annotated[AsyncSession, Depends(get_db)],

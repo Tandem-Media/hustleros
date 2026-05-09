@@ -14,7 +14,7 @@ from services.command_parser import CommandParser
 router = APIRouter(prefix="/api/commands", tags=["commands"])
 
 
-@router.post('/parse', response_model=CommandParseResponse, status_code=status.HTTP_200_OK)
+@router.post("/parse", response_model=CommandParseResponse, status_code=status.HTTP_200_OK)
 async def parse_command(payload: CommandParseRequest) -> dict[str, Any]:
     command = CommandParser().parse(
         payload.text,
