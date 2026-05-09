@@ -21,15 +21,15 @@ class CommandParser:
         re.IGNORECASE,
     )
     order_pattern: Pattern[str] = re.compile(
-        r"create order customer (?P<customer_id>[a-z0-9\-]+) total (?P<total>[0-9]+(?:\.[0-9]{1,2})?)",
+        r"create order customer (?P<customer_id>[A-Za-z0-9\-]+) total (?P<total>[0-9]+(?:\.[0-9]{1,2})?)",
         re.IGNORECASE,
     )
     payment_pattern: Pattern[str] = re.compile(
-        r"report payment order (?P<order_id>[a-z0-9\-]+) amount (?P<amount>[0-9]+(?:\.[0-9]{1,2})?)(?: method (?P<method>[a-z_]+))?",
+        r"report payment order (?P<order_id>[A-Za-z0-9\-]+) amount (?P<amount>[0-9]+(?:\.[0-9]{1,2})?)(?: method (?P<method>[a-z_]+))?",
         re.IGNORECASE,
     )
     order_status_pattern: Pattern[str] = re.compile(
-        r"(?:update|patch) order (?P<order_id>[a-z0-9\-]+) status (?P<status>[a-z_\-]+)",
+        r"(?:update|patch) order (?P<order_id>[A-Za-z0-9\-]+) status (?P<status>[a-z_\-]+)",
         re.IGNORECASE,
     )
 

@@ -36,7 +36,7 @@ async def _verify_payment_timeout_with_session(
         return {"status": "skipped", "reason": "no reported payment found"}
 
     timeout_event = Payment(
-        tenant_id=tenant_id or last_report.tenant_id,
+        tenant_id=tenant_id if tenant_id is not None else last_report.tenant_id,
         order_id=last_report.order_id,
         event_type="TIMEOUT",
         amount=pending,

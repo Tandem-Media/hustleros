@@ -72,7 +72,6 @@ def _instrument_app(app: FastAPI) -> None:
     instrument(app)
     app.state.alertengine_instrumented = True
 
-
 class _RedisStub:
     async def ping(self) -> bool:
         return True

@@ -103,9 +103,9 @@ async def derive_payment_balance(session: AsyncSession, order_id: UUID) -> dict[
     verified_total = _sum_amounts(events, "VERIFIED")
     disputed_total = _sum_amounts(events, "DISPUTED")
     timed_out_total = _sum_amounts(events, "TIMEOUT")
-    net_verified_total = max(Decimal("0.00"), verified_total - disputed_total)
+    verified_after_disputes = max(Decimal("0.00"), verified_total - disputed_total)
     pending_verification = max(Decimal("0.00"), reported_total - verified_total - timed_out_total)
-    outstanding_balance = max(Decimal(order.total) - net_verified_total, Decimal("0.00"))
+    outstanding_balance = max(Decimal(order.total) - verified_after_disputes, Decimal("0.00"))
 
     return {
         "order_id": order.id,

@@ -18,8 +18,6 @@ _counters = {
 
 async def _emit(type: str, severity: str, service: str, metadata: dict | None = None) -> None:
     try:
-        if type in _counters:
-            _counters[type] += 1
         logger.info(
             "incident_emitted type=%s severity=%s service=%s metadata=%s",
             type,
@@ -40,8 +38,9 @@ async def emit_incident(
     """Fire-and-forget. Never raises. Always create_task."""
 
     try:
+        if type in _counters:
+            _counters[type] += 1
         asyncio.create_task(_emit(type, severity, service, metadata))
-        await asyncio.sleep(0)
     except Exception as exc:  # noqa: BLE001
         logger.warning("Failed to schedule incident emission: %s", exc)
 
