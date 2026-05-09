@@ -24,10 +24,23 @@ def get_session_factory() -> async_sessionmaker[AsyncSession]:
     return _session_factory
 
 
+def reset_session_factory() -> None:
+    """Reset cached session factory."""
+
+    global _session_factory
+    _session_factory = None
+
+
 @asynccontextmanager
 async def get_session() -> AsyncSession:
     """Yield an async session with guaranteed cleanup."""
 
     session_factory = get_session_factory()
     async with session_factory() as session:
-        yield session
+        try:
+            yield session
+        except Exception:
+            await session.rollback()
+            raise
+        finally:
+            await session.close()

@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from datetime import date, datetime, timezone
 from decimal import Decimal
-from uuid import uuid4
+from uuid import UUID, uuid4
 
 
 @dataclass
@@ -17,23 +17,35 @@ class Command:
 
 
 @dataclass
+class CreateCustomerCommand(Command):
+    name: str = ""
+    phone: str = ""
+
+
+@dataclass
 class CreateOrderCommand(Command):
-    customer_id: str = ""
+    customer_id: UUID | str | None = None
     items: list[dict] = field(default_factory=list)
-    total: Decimal = Decimal("0")
+    total: Decimal = Decimal("0.00")
+
+
+@dataclass
+class UpdateOrderStatusCommand(Command):
+    order_id: UUID | str | None = None
+    status: str = ""
 
 
 @dataclass
 class CreateInvoiceCommand(Command):
     order_id: str = ""
-    amount: Decimal = Decimal("0")
+    amount: Decimal = Decimal("0.00")
     due_date: date | None = None
 
 
 @dataclass
 class ReportPaymentCommand(Command):
-    order_id: str = ""
-    amount: Decimal = Decimal("0")
+    order_id: UUID | str | None = None
+    amount: Decimal = Decimal("0.00")
     method: str = ""
     reference: str | None = None
     reported_by: str | None = None

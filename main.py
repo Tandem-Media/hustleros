@@ -1,4 +1,4 @@
-"""HustlerOS Phase 1 FastAPI service."""
+"""HustlerOS Phase 2 FastAPI service."""
 
 from __future__ import annotations
 
@@ -10,6 +10,7 @@ from typing import Any
 from fastapi import FastAPI
 from redis.asyncio import Redis
 
+from api.commands import router as commands_router
 from api.customers import router as customers_router
 from api.deliveries import router as deliveries_router
 from api.invoices import router as invoices_router
@@ -18,18 +19,15 @@ from api.payments import router as payments_router
 from api.webhooks import router as webhooks_router
 from config import get_settings
 from db.base import close_db, get_engine, init_db
-from observability.alertengine import get_incident_counts
+from db.session import reset_session_factory
+from observability.alertengine import get_incident_counts, health_score_contributor
 
 logger = logging.getLogger(__name__)
 
 try:
-    from fastapi_alertengine import instrument
+    from fastapi_alertengine import instrument as _external_instrument
 except Exception:  # noqa: BLE001
-
-    def instrument(app: FastAPI) -> None:
-        @app.get("/health/alerts")
-        async def _health_alerts_fallback() -> dict[str, str]:
-            return {"status": "ok"}
+    _external_instrument = None
 
 
 QUEUE_NAMES = [
@@ -39,6 +37,33 @@ QUEUE_NAMES = [
     "hustleros:queue:reconciliation",
     "hustleros:dlq",
 ]
+
+
+def _alert_status_from_score(score: float) -> str:
+    if score >= 0.9:
+        return "ok"
+    if score >= 0.7:
+        return "degraded"
+    return "critical"
+
+
+def instrument(app: FastAPI) -> None:
+    if _external_instrument is not None:
+        try:
+            _external_instrument(app)
+            return
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("Alertengine instrumentation failed: %s", exc)
+
+    @app.get("/health/alerts")
+    async def _health_alerts_fallback() -> dict[str, Any]:
+        score = health_score_contributor()
+        return {
+            "status": _alert_status_from_score(score),
+            "health_score": score,
+            "business_incidents": get_incident_counts(),
+        }
+
 
 
 def _instrument_app(app: FastAPI) -> None:
@@ -104,16 +129,24 @@ async def lifespan(app: FastAPI):
     finally:
         try:
             await close_db()
+            reset_session_factory()
         except Exception as exc:  # noqa: BLE001
             logger.warning("Database shutdown failed: %s", exc)
         try:
             await app.state.redis.aclose()
         except Exception as exc:  # noqa: BLE001
             logger.warning("Redis shutdown failed: %s", exc)
+        arq = getattr(app.state, "arq", None)
+        if arq is not None:
+            try:
+                await arq.aclose()
+            except Exception as exc:  # noqa: BLE001
+                logger.warning("Arq shutdown failed: %s", exc)
 
 
-app = FastAPI(title="hustleros", version="0.1.0", lifespan=lifespan)
+app = FastAPI(title="hustleros", version="0.2.0", lifespan=lifespan)
 
+app.include_router(commands_router)
 app.include_router(orders_router)
 app.include_router(invoices_router)
 app.include_router(payments_router)
@@ -126,7 +159,7 @@ _instrument_app(app)
 @app.get("/")
 async def root() -> dict[str, str]:
     settings = getattr(app.state, "settings", None)
-    version = settings.APP_VERSION if settings else "0.1.0"
+    version = settings.APP_VERSION if settings else "0.2.0"
     return {"service": "hustleros", "version": version}
 
 
@@ -134,7 +167,7 @@ async def root() -> dict[str, str]:
 async def status() -> dict[str, Any]:
     settings = getattr(app.state, "settings", None)
     environment = settings.ENVIRONMENT if settings else "development"
-    version = settings.APP_VERSION if settings else "0.1.0"
+    version = settings.APP_VERSION if settings else "0.2.0"
     uptime_s = max(0.0, time.monotonic() - getattr(app.state, "started_monotonic", time.monotonic()))
 
     pool_size = 10
@@ -185,5 +218,6 @@ async def status() -> dict[str, Any]:
         "alertengine": {
             "instrumented": bool(getattr(app.state, "alertengine_instrumented", False)),
             "health_url": "/health/alerts",
+            "health_score": health_score_contributor(),
         },
     }

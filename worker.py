@@ -1,1 +1,5 @@
-"""Arq worker entry point placeholder for HustlerOS Phase 1."""
+"""Arq worker entry point for HustlerOS."""
+
+from workers.arq_worker import WorkerSettings
+
+__all__ = ["WorkerSettings"]

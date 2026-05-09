@@ -7,7 +7,7 @@ from decimal import Decimal
 from typing import Any
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class BaseSchema(BaseModel):
@@ -30,12 +30,18 @@ class CustomerResponse(BaseSchema):
 
 
 class OrderRequest(BaseSchema):
-    tenant_id: str
+    tenant_id: str = "default"
     customer_id: UUID
-    items: dict[str, Any]
-    status: str
+    items: dict[str, Any] = Field(default_factory=dict)
+    status: str = "PENDING"
     total: Decimal
     correlation_id: str
+
+
+class OrderPatchRequest(BaseSchema):
+    items: dict[str, Any] | None = None
+    status: str | None = None
+    total: Decimal | None = None
 
 
 class OrderResponse(BaseSchema):
@@ -73,6 +79,17 @@ class InvoiceResponse(BaseSchema):
     updated_at: datetime
 
 
+class PaymentReportRequest(BaseSchema):
+    tenant_id: str = "default"
+    order_id: UUID
+    amount: Decimal
+    method: str
+    reference: str | None = None
+    reported_by: str | None = None
+    correlation_id: str
+    causation_id: str
+
+
 class PaymentRequest(BaseSchema):
     tenant_id: str
     order_id: UUID
@@ -99,6 +116,17 @@ class PaymentResponse(BaseSchema):
     correlation_id: str
     causation_id: str
     created_at: datetime
+
+
+class PaymentBalanceResponse(BaseSchema):
+    order_id: UUID
+    order_total: Decimal
+    reported_total: Decimal
+    verified_total: Decimal
+    disputed_total: Decimal
+    timed_out_total: Decimal
+    pending_verification: Decimal
+    outstanding_balance: Decimal
 
 
 class DeliveryRequest(BaseSchema):
@@ -184,3 +212,14 @@ class WebhookReceiptResponse(BaseSchema):
     received_at: datetime
     processed_at: datetime | None
     error: str | None
+
+
+class CommandParseRequest(BaseSchema):
+    text: str
+    tenant_id: str = "default"
+    correlation_id: str = ""
+
+
+class CommandParseResponse(BaseSchema):
+    command_type: str
+    payload: dict[str, Any]

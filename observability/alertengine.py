@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+from collections.abc import Mapping
 
 logger = logging.getLogger(__name__)
 
@@ -40,14 +41,22 @@ async def emit_incident(
 
     try:
         asyncio.create_task(_emit(type, severity, service, metadata))
+        await asyncio.sleep(0)
     except Exception as exc:  # noqa: BLE001
         logger.warning("Failed to schedule incident emission: %s", exc)
 
 
-def get_incident_counts() -> dict:
+def get_incident_counts() -> dict[str, int]:
     """Return current counters."""
 
     return dict(_counters)
+
+
+def reset_incident_counts(counts: Mapping[str, int] | None = None) -> None:
+    """Reset counters for tests."""
+
+    for key in _counters:
+        _counters[key] = int((counts or {}).get(key, 0))
 
 
 def health_score_contributor() -> float:

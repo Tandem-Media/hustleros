@@ -19,7 +19,17 @@ class DomainEvent:
 
 
 @dataclass
+class CustomerCreatedEvent(DomainEvent):
+    pass
+
+
+@dataclass
 class OrderCreatedEvent(DomainEvent):
+    pass
+
+
+@dataclass
+class OrderUpdatedEvent(DomainEvent):
     pass
 
 
@@ -45,6 +55,11 @@ class PaymentDisputedEvent(DomainEvent):
 
 @dataclass
 class PaymentTimeoutEvent(DomainEvent):
+    pass
+
+
+@dataclass
+class OutboxPublishedEvent(DomainEvent):
     pass
 
 
