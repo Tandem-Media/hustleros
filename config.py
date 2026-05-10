@@ -1,9 +1,14 @@
 """Application configuration for HustlerOS."""
 
 from functools import lru_cache
-
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+
+def _make_async_url(url: str) -> str:
+    """Convert postgresql:// to postgresql+asyncpg://"""
+    if url.startswith("postgresql://"):
+        return url.replace("postgresql://", "postgresql+asyncpg://", 1)
+    return url
 
 class Settings(BaseSettings):
     """Runtime settings loaded from environment."""
@@ -20,6 +25,10 @@ class Settings(BaseSettings):
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
+    def __init__(self, **values):
+        if "DATABASE_URL" in values:
+            values["DATABASE_URL"] = _make_async_url(values["DATABASE_URL"])
+        super().__init__(**values)
 
 @lru_cache(maxsize=1)
 def get_settings() -> Settings:
