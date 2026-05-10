@@ -19,7 +19,17 @@ class DomainEvent:
 
 
 @dataclass
+class CustomerCreatedEvent(DomainEvent):
+    pass
+
+
+@dataclass
 class OrderCreatedEvent(DomainEvent):
+    pass
+
+
+@dataclass
+class OrderStatusChangedEvent(DomainEvent):
     pass
 
 

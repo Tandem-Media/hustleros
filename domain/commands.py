@@ -14,6 +14,7 @@ class Command:
     tenant_id: str = "default"
     correlation_id: str = ""
     issued_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    confidence: float = 1.0
 
 
 @dataclass
@@ -21,6 +22,8 @@ class CreateOrderCommand(Command):
     customer_id: str = ""
     items: list[dict] = field(default_factory=list)
     total: Decimal = Decimal("0")
+    customer_name: str = ""
+    raw_input: str = ""
 
 
 @dataclass
@@ -28,6 +31,8 @@ class CreateInvoiceCommand(Command):
     order_id: str = ""
     amount: Decimal = Decimal("0")
     due_date: date | None = None
+    customer_name: str = ""
+    raw_input: str = ""
 
 
 @dataclass
@@ -37,6 +42,7 @@ class ReportPaymentCommand(Command):
     method: str = ""
     reference: str | None = None
     reported_by: str | None = None
+    raw_input: str = ""
 
 
 @dataclass
@@ -56,3 +62,4 @@ class NotifyCustomerCommand(Command):
 class UnknownCommand(Command):
     raw_input: str = ""
     reason: str = ""
+    confidence: float = 0.0

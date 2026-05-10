@@ -7,7 +7,7 @@ from decimal import Decimal
 from typing import Any
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class BaseSchema(BaseModel):
@@ -26,28 +26,44 @@ class CustomerResponse(BaseSchema):
     name: str
     phone: str
     created_at: datetime
+
+
+class CustomerInternalResponse(CustomerResponse):
     updated_at: datetime
 
 
-class OrderRequest(BaseSchema):
-    tenant_id: str
-    customer_id: UUID
-    items: dict[str, Any]
-    status: str
+class OrderItem(BaseSchema):
+    name: str
+    quantity: int = Field(gt=0)
+    unit_price: Decimal
     total: Decimal
-    correlation_id: str
+
+
+class OrderRequest(BaseSchema):
+    customer_id: UUID
+    items: list[OrderItem]
+    total: Decimal
+    tenant_id: str = "default"
+    correlation_id: str | None = None
 
 
 class OrderResponse(BaseSchema):
     id: UUID
     tenant_id: str
     customer_id: UUID
-    items: dict[str, Any]
+    items: list[dict[str, Any]]
     status: str
     total: Decimal
     correlation_id: str
     created_at: datetime
-    updated_at: datetime
+
+
+class OrderWithCustomerResponse(OrderResponse):
+    customer_name: str
+
+
+class OrderStatusRequest(BaseSchema):
+    status: str
 
 
 class InvoiceRequest(BaseSchema):
@@ -99,6 +115,35 @@ class PaymentResponse(BaseSchema):
     correlation_id: str
     causation_id: str
     created_at: datetime
+
+
+class PaymentReportRequest(BaseSchema):
+    order_id: UUID
+    amount: Decimal
+    method: str
+    reference: str | None = None
+    reported_by: str
+    tenant_id: str = "default"
+
+
+class PaymentReportResponse(BaseSchema):
+    id: UUID
+    order_id: UUID
+    event_type: str
+    amount: Decimal
+    method: str
+    reference: str | None
+    reported_by: str | None
+    created_at: datetime
+
+
+class PaymentBalanceResponse(BaseSchema):
+    order_id: UUID
+    total_reported: Decimal
+    total_verified: Decimal
+    total_disputed: Decimal
+    outstanding: Decimal
+    events: list[PaymentResponse]
 
 
 class DeliveryRequest(BaseSchema):
@@ -184,3 +229,15 @@ class WebhookReceiptResponse(BaseSchema):
     received_at: datetime
     processed_at: datetime | None
     error: str | None
+
+class ParseRequest(BaseModel):
+    message: str
+    tenant_id: str = "default"
+
+
+class ParseResponse(BaseModel):
+    command_type: str
+    confidence: float
+    parsed: dict
+    raw: str
+

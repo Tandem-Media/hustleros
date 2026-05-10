@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from contextlib import asynccontextmanager
+from typing import AsyncIterator
 
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
@@ -24,10 +25,19 @@ def get_session_factory() -> async_sessionmaker[AsyncSession]:
     return _session_factory
 
 
+class _AsyncSessionProxy:
+    """Lazy callable proxy matching SQLAlchemy sessionmaker usage."""
+
+    def __call__(self) -> AsyncSession:
+        return get_session_factory()()
+
+
+async_session = _AsyncSessionProxy()
+
+
 @asynccontextmanager
-async def get_session() -> AsyncSession:
+async def get_session() -> AsyncIterator[AsyncSession]:
     """Yield an async session with guaranteed cleanup."""
 
-    session_factory = get_session_factory()
-    async with session_factory() as session:
+    async with async_session() as session:
         yield session
